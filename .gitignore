@@ -1,0 +1,15 @@
+# Ignore node_modules directory
+node_modules/
+
+# Ignore output CSS file
+output.css
+
+# Ignore environment variable file
+.env
+
+# Ignore IDE-specific files
+.vscode/
+
+# Ignore system-specific files
+.DS_Store
+Thumbs.db

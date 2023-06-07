@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Smart Meeting Scheduler</title>
+        <link href="output.css" rel="stylesheet" />
+        <script src="script.js" defer></script>
+        <script src="https://apis.google.com/js/api.js" onload="initClient()" async defer></script>
+    </head>
+
+    <body class="bg-gray-200 text-gray-800">
+        <div class="container mx-auto p-8">
+            <h1 class="text-4xl font-bold mb-6">Smart Meeting Scheduler</h1>
+            <form id="meeting-form" class="space-y-4">
+                <div>
+                    <label for="title" class="block mb-2">Meeting Title:</label>
+                    <input
+                        type="text"
+                        id="title"
+                        name="title"
+                        required
+                        class="w-full p-2 border border-gray-300 rounded"
+                    />
+                </div>
+
+                <div>
+                    <label for="description" class="block mb-2"
+                        >Description:</label
+                    >
+                    <textarea
+                        id="description"
+                        name="description"
+                        class="w-full p-2 border border-gray-300 rounded"
+                    ></textarea>
+                </div>
+
+                <div>
+                    <label for="attendees" class="block mb-2">Attendees:</label>
+                    <input
+                        type="text"
+                        id="attendees"
+                        name="attendees"
+                        placeholder="Enter email addresses separated by comma"
+                        required
+                        class="w-full p-2 border border-gray-300 rounded"
+                    />
+                </div>
+
+                <div>
+                    <label for="start-date" class="block mb-2"
+                        >Preferred Start Date:</label
+                    >
+                    <input
+                        type="date"
+                        id="start-date"
+                        name="start-date"
+                        required
+                        class="w-full p-2 border border-gray-300 rounded"
+                    />
+                </div>
+
+                <div>
+                    <label for="end-date" class="block mb-2"
+                        >Preferred End Date:</label
+                    >
+                    <input
+                        type="date"
+                        id="end-date"
+                        name="end-date"
+                        required
+                        class="w-full p-2 border border-gray-300 rounded"
+                    />
+                </div>
+
+                <div>
+                    <label for="duration" class="block mb-2"
+                        >Meeting Duration (minutes):</label
+                    >
+                    <input
+                        type="number"
+                        id="duration"
+                        name="duration"
+                        min="15"
+                        step="15"
+                        required
+                        class="w-full p-2 border border-gray-300 rounded"
+                    />
+                </div>
+
+                <div>
+                    <button
+                        type="submit"
+                        class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-200"
+                    >
+                        Schedule Meeting
+                    </button>
+                </div>
+            </form>
+        </div>
+    </body>
+</html>
