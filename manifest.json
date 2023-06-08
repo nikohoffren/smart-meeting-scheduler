@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "Smart Meeting Scheduler",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "An extension to automatically schedule meetings using Google Calendar",
     "permissions": ["identity"],
     "background": {
