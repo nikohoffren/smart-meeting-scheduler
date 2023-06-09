@@ -1,12 +1,14 @@
-import Dotenv from 'dotenv-webpack';
+const Dotenv = require('dotenv-webpack');
 
-export const mode = 'development';
-export const devtool = 'source-map';
-export const entry = './script.js';
-export const output = {
-    filename: 'main.js',
-    path: __dirname + '/dist',
+module.exports = {
+    mode: 'development',
+    devtool: 'source-map',
+    entry: './script.js',
+    output: {
+        filename: 'main.js',
+        path: __dirname + '/dist',
+    },
+    plugins: [
+        new Dotenv()
+    ]
 };
-export const plugins = [
-    new Dotenv()
-];

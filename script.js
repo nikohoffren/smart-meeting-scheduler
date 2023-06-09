@@ -7,7 +7,7 @@ let userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 const scopes = "https://www.googleapis.com/auth/calendar";
 
-// Initialize Google OAuth on window load
+//* Initialize Google OAuth on window load
 window.onload = initGoogleOAuth;
 
 function initGoogleOAuth() {
