@@ -1,9 +1,9 @@
 let GoogleAuth;
 
 const config = {
-    apiKey: "",
+    apiKey: "AIzaSyBTN-F_F1BreVZi_pB8wEgF0Fos7cc_ndw",
     clientId:
-        "",
+        "862708403559-2dipe86e77d825ha97orapnc5ks6fd6o.apps.googleusercontent.com",
 };
 
 // Call loadClient when the page loads
@@ -49,7 +49,7 @@ function handleAuthClick() {
 }
 
 function updateSigninStatus(isSignedIn) {
-   
+
 }
 
 function loadScript(url) {
