@@ -11,11 +11,12 @@
         "128": "img/smart-meeting-scheduler-logo-128-128.jpg"
     },
     "host_permissions": [
-        "https://www.googleapis.com/*"
+        "https://www.googleapis.com/*",
+        "https://apis.google.com/*"
     ],
     "web_accessible_resources": [
         {
-            "resources": ["api.js", "script.js"],
+            "resources": ["api.js", "dist/main.js"],
             "matches": ["<all_urls>"]
         }
     ]

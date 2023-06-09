@@ -1,67 +1,69 @@
-let GoogleAuth;
+let clientId = process.env.CLIENT_ID;
+let clientSecret = process.env.CLIENT_SECRET; // you should have this from Google's OAuth2 flow
+let redirectUrl = chrome.identity.getRedirectURL();
+let calendarId = "primary";
+let maxResults = 10;
+let timeMin = new Date().toISOString(); // Get events after now.
+let accessToken;
 
-const config = {
-    apiKey: process.env.API_KEY,
-    clientId: process.env.CLIENT_ID,
-};
+const scopes = "https://www.googleapis.com/auth/calendar";
 
-// Call loadClient when the page loads
-window.onload = loadClient;
+// Initialize Google OAuth on window load
+window.onload = initGoogleOAuth;
 
-function loadClient() {
-    // Load gapi and then call initClient
-    gapi.load("client:auth2", initClient);
+function initGoogleOAuth() {
+    // Start Google auth flow.
+    chrome.identity.getAuthToken({ interactive: true, scopes: [scopes] }, function (token) {
+        if (chrome.runtime.lastError) {
+            console.log(chrome.runtime.lastError.message);
+            return;
+        }
+        // Use the obtained token
+        accessToken = token;
+        // Fetch the calendar events
+        fetchEvents(accessToken);
+    });
 }
 
-function initClient() {
-    gapi.client
-        .init({
-            apiKey: config.apiKey,
-            clientId: config.clientId,
-            scope: "https://www.googleapis.com/auth/calendar",
-            discoveryDocs: [
-                "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest",
-            ],
+function fetchEvents(accessToken) {
+    fetch(`https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?maxResults=${maxResults}&timeMin=${timeMin}`, {
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+        },
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Fetched events:", data.items);
         })
-        .then(function () {
-            GoogleAuth = gapi.auth2.getAuthInstance();
-
-            // Listen for sign-in state changes.
-            GoogleAuth.isSignedIn.listen(updateSigninStatus);
-
-            // Handle the initial sign-in state
-            updateSigninStatus(GoogleAuth.isSignedIn.get());
-        })
-        .catch((error) => {
-            console.error("Failed to initialize client:", error);
+        .catch(error => {
+            console.error("Failed to fetch events:", error);
         });
 }
 
 function handleAuthClick() {
-    if (GoogleAuth.isSignedIn.get()) {
-        // User is authorized and has clicked "Sign out" button.
-        GoogleAuth.signOut();
-    } else {
-        // User is not signed in. Start Google auth flow.
-        GoogleAuth.signIn();
-    }
-}
+    let authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&response_type=code&scope=${encodeURIComponent(scopes)}&redirect_uri=${encodeURIComponent(redirectUrl)}`;
+    chrome.identity.launchWebAuthFlow({ url: authUrl, interactive: true }, redirectUrlWithCode => {
+        let url = new URL(redirectUrlWithCode);
+        let code = url.searchParams.get("code");
 
-function updateSigninStatus(isSignedIn) {}
-
-function loadScript(url) {
-    return new Promise((resolve, reject) => {
-        let script = document.createElement("script");
-        script.src = url;
-
-        script.onload = () => {
-            resolve();
-        };
-
-        script.onerror = (error) => {
-            reject(error);
-        };
-
-        document.body.appendChild(script);
+        // Now exchange the authorization code for an access token.
+        fetch("https://oauth2.googleapis.com/token", {
+            method: "POST",
+            body: JSON.stringify({
+                code: code,
+                client_id: clientId,
+                client_secret: clientSecret,
+                redirect_uri: redirectUrl,
+                grant_type: "authorization_code",
+            }),
+            headers: {
+                "Content-Type": "application/json",
+            },
+        })
+            .then(response => response.json())
+            .then(data => {
+                accessToken = data.access_token;
+                // Now you can use the access token to make authorized API requests.
+            });
     });
 }
