@@ -1,6 +1,4 @@
-let clientId = process.env.CLIENT_ID;
-let clientSecret = process.env.CLIENT_SECRET; // you should have this from Google's OAuth2 flow
-let redirectUrl = chrome.identity.getRedirectURL();
+let clientId = "862708403559-2dipe86e77d825ha97orapnc5ks6fd6o.apps.googleusercontent.com";
 let calendarId = "primary";
 let maxResults = 10;
 let timeMin = new Date().toISOString(); // Get events after now.
@@ -38,32 +36,4 @@ function fetchEvents(accessToken) {
         .catch(error => {
             console.error("Failed to fetch events:", error);
         });
-}
-
-function handleAuthClick() {
-    let authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&response_type=code&scope=${encodeURIComponent(scopes)}&redirect_uri=${encodeURIComponent(redirectUrl)}`;
-    chrome.identity.launchWebAuthFlow({ url: authUrl, interactive: true }, redirectUrlWithCode => {
-        let url = new URL(redirectUrlWithCode);
-        let code = url.searchParams.get("code");
-
-        // Now exchange the authorization code for an access token.
-        fetch("https://oauth2.googleapis.com/token", {
-            method: "POST",
-            body: JSON.stringify({
-                code: code,
-                client_id: clientId,
-                client_secret: clientSecret,
-                redirect_uri: redirectUrl,
-                grant_type: "authorization_code",
-            }),
-            headers: {
-                "Content-Type": "application/json",
-            },
-        })
-            .then(response => response.json())
-            .then(data => {
-                accessToken = data.access_token;
-                // Now you can use the access token to make authorized API requests.
-            });
-    });
 }

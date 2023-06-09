@@ -19,5 +19,9 @@
             "resources": ["api.js", "dist/main.js"],
             "matches": ["<all_urls>"]
         }
-    ]
+    ],
+    "oauth2": {
+       "client_id": "862708403559-2dipe86e77d825ha97orapnc5ks6fd6o.apps.googleusercontent.com",
+       "scopes": ["https://www.googleapis.com/auth/calendar"]
+    }
 }
