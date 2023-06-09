@@ -27,6 +27,65 @@ function initGoogleOAuth() {
     );
 }
 
+function displayEvents(events) {
+    const upcomingEvents = document.getElementById("upcoming-events");
+
+    // Clear previous events
+    upcomingEvents.innerHTML = "";
+
+    // Apply layout classes to center child elements
+    upcomingEvents.classList.add(
+        "flex",
+        "flex-col",
+        "items-center",
+        "justify-center"
+    );
+
+    // Check if there are any events
+    if (events.length > 0) {
+        // Create and append the heading
+        const heading = document.createElement("h1");
+        heading.textContent = "Upcoming Events";
+        heading.classList.add("text-lg", "font-bold", "mb-4");
+        upcomingEvents.appendChild(heading);
+    }
+
+    events.forEach((event) => {
+        const eventElement = document.createElement("div");
+        eventElement.classList.add(
+            "event",
+            "bg-white",
+            "shadow",
+            "my-4",
+            "p-4",
+            "rounded-md"
+        );
+
+        const titleElement = document.createElement("h2");
+        titleElement.textContent = event.summary;
+        titleElement.classList.add("text-lg", "font-bold", "mb-2");
+        eventElement.appendChild(titleElement);
+
+        const timeElement = document.createElement("p");
+        timeElement.textContent = `Starts: ${new Date(
+            event.start.dateTime
+        ).toLocaleString()} Ends: ${new Date(
+            event.end.dateTime
+        ).toLocaleString()}`;
+        timeElement.classList.add("mb-4", "text-gray-600");
+        eventElement.appendChild(timeElement);
+
+        const linkElement = document.createElement("a");
+        linkElement.href = event.htmlLink;
+        linkElement.textContent = "Open in Google Calendar";
+        linkElement.target = "_blank";
+        linkElement.classList.add("text-blue-500", "underline");
+        eventElement.appendChild(linkElement);
+
+        upcomingEvents.appendChild(eventElement);
+    });
+}
+
 function fetchEvents(accessToken) {
     fetch(
         `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?maxResults=${maxResults}&timeMin=${timeMin}`,
@@ -39,6 +98,7 @@ function fetchEvents(accessToken) {
         .then((response) => response.json())
         .then((data) => {
             console.log("Fetched events:", data.items);
+            displayEvents(data.items);
         })
         .catch((error) => {
             console.error("Failed to fetch events:", error);
