@@ -10,68 +10,89 @@
         <script src="dist/main.js" defer></script>
     </head>
 
-    <body class="bg-white-200 text-gray-800">
-        <div class="container mx-auto p-8">
-            <h1 class="text-4xl font-bold mb-6">
-                Smart Meeting Scheduler for Google Calendar
-            </h1>
+    <body class="bg-white-200">
+        <div class="flex justify-center pt-20 px-8">
+            <form
+                id="meeting-form"
+                class="w-full max-w-xl bg-white rounded-lg shadow-md px-12 pt-6 pb-8 mb-4"
+            >
+                <div class="flex justify-center">
+                    <img
+                        class="justify center"
+                        src="img/smart-meeting-scheduler-logo-128-128.jpg"
+                        alt="Smart Meeting Scheduler logo"
+                    />
+                </div>
 
-            <!-- <img
-                src="img/smart-meeting-scheduler-logo.jpg"
-                class="h-8 object-scale-down"
-                alt="Smart Meeting Scheduler logo"
-            /> -->
-
-            <form id="meeting-form" class="space-y-4">
-                <div>
-                    <label for="title" class="block mb-2">Meeting Title:</label>
+                <div class="mb-4">
+                    <label
+                        class="block text-gray-700 text-sm font-bold mb-2"
+                        for="title"
+                    >
+                        Meeting Title
+                    </label>
                     <input
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                         type="text"
                         id="title"
                         name="title"
                         required
-                        class="w-full p-2 border border-gray-300 rounded"
                     />
                 </div>
 
-                <div>
-                    <label for="description" class="block mb-2"
-                        >Description:</label
+                <div class="mb-4">
+                    <label
+                        class="block text-gray-700 text-sm font-bold mb-2"
+                        for="description"
                     >
+                        Description
+                    </label>
                     <textarea
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                         id="description"
+                        type="text"
                         name="description"
-                        class="w-full p-2 border border-gray-300 rounded"
+                        required
                     ></textarea>
                 </div>
 
-                <div>
-                    <label for="attendees" class="block mb-2">Attendees:</label>
+                <div class="mb-4">
+                    <label
+                        class="block text-gray-700 text-sm font-bold mb-2"
+                        for="attendees"
+                    >
+                        Attendees
+                    </label>
                     <input
-                        type="text"
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                         id="attendees"
                         name="attendees"
+                        type="text"
                         placeholder="Enter email addresses separated by comma"
                         required
-                        class="w-full p-2 border border-gray-300 rounded"
                     />
                 </div>
 
-                <div>
-                    <label for="start-date" class="block mb-2"
-                        >Preferred Start Date:</label
+                <div class="mb-4">
+                    <label
+                        class="block text-gray-700 text-sm font-bold mb-2"
+                        for="start-date"
                     >
+                        Preferred Start Date
+                    </label>
                     <input
-                        type="date"
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                         id="start-date"
                         name="start-date"
+                        type="date"
                         required
-                        class="w-full p-2 border border-gray-300 rounded"
                     />
                 </div>
 
                 <div>
-                    <label for="end-date" class="block mb-2"
+                    <label
+                        for="end-date"
+                        class="block block text-gray-700 text-sm font-bold mb-2"
                         >Preferred End Date:</label
                     >
                     <input
@@ -83,25 +104,28 @@
                     />
                 </div>
 
-                <div>
-                    <label for="duration" class="block mb-2"
-                        >Meeting Duration (minutes):</label
+                <div class="mb-4">
+                    <label
+                        class="block text-gray-700 text-sm font-bold mb-2"
+                        for="duration"
                     >
+                        Meeting Duration (minutes)
+                    </label>
                     <input
-                        type="number"
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                         id="duration"
                         name="duration"
+                        type="number"
                         min="15"
                         step="15"
                         required
-                        class="w-full p-2 border border-gray-300 rounded"
                     />
                 </div>
 
-                <div>
+                <div class="flex items-center justify-between">
                     <button
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                         type="submit"
-                        class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-200"
                     >
                         Schedule Meeting
                     </button>
