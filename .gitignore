@@ -1,6 +1,9 @@
 # Ignore node_modules directory
 node_modules/
 
+# Ignore dist directory
+dist/
+
 # Ignore output CSS file
 output.css
 
@@ -13,7 +16,3 @@ output.css
 # Ignore system-specific files
 .DS_Store
 Thumbs.db
-
-# Ignore script.js for now
-test.js
-script.js

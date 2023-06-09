@@ -1,9 +1,8 @@
 let GoogleAuth;
 
 const config = {
-    apiKey: "",
-    clientId:
-        "",
+    apiKey: process.env.API_KEY,
+    clientId: process.env.CLIENT_ID,
 };
 
 // Call loadClient when the page loads
@@ -48,9 +47,7 @@ function handleAuthClick() {
     }
 }
 
-function updateSigninStatus(isSignedIn) {
-
-}
+function updateSigninStatus(isSignedIn) {}
 
 function loadScript(url) {
     return new Promise((resolve, reject) => {
