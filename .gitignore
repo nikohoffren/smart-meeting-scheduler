@@ -13,3 +13,6 @@ output.css
 # Ignore system-specific files
 .DS_Store
 Thumbs.db
+
+# Ignore script.js for now
+test.js
