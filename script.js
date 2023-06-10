@@ -1,9 +1,10 @@
 let clientId = process.env.CLIENT_ID;
 let calendarId = "primary";
 let maxResults = 10;
-let timeMin = new Date().toISOString(); // Get events after now.
+let timeMin = new Date().toISOString();
 let accessToken;
 let userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+let attendeesArray = [];
 
 const scopes = "https://www.googleapis.com/auth/calendar";
 
@@ -11,7 +12,7 @@ const scopes = "https://www.googleapis.com/auth/calendar";
 window.onload = initGoogleOAuth;
 
 function initGoogleOAuth() {
-    // Start Google auth flow.
+    //* Start Google auth flow.
     chrome.identity.getAuthToken(
         { interactive: true, scopes: [scopes] },
         (token) => {
@@ -19,9 +20,9 @@ function initGoogleOAuth() {
                 console.log(chrome.runtime.lastError.message);
                 return;
             }
-            // Use the obtained token
+
             accessToken = token;
-            // Fetch the calendar events
+
             fetchEvents(accessToken);
         }
     );
@@ -30,10 +31,8 @@ function initGoogleOAuth() {
 function displayEvents(events) {
     const upcomingEvents = document.getElementById("upcoming-events");
 
-    // Clear previous events
     upcomingEvents.innerHTML = "";
 
-    // Apply layout classes to center child elements
     upcomingEvents.classList.add(
         "flex",
         "flex-col",
@@ -41,9 +40,7 @@ function displayEvents(events) {
         "justify-center"
     );
 
-    // Check if there are any events
     if (events.length > 0) {
-        // Create and append the heading
         const heading = document.createElement("h1");
         heading.textContent = "Upcoming Events";
         heading.classList.add("text-lg", "font-bold", "mb-4");
@@ -105,61 +102,207 @@ function fetchEvents(accessToken) {
         });
 }
 
-document.querySelector("#meeting-form").addEventListener("submit", (e) => {
-    e.preventDefault(); // Prevents the default form submit action
+function displayAvailableSlots(freeSlots) {
+    const slotsContainer = document.getElementById("slots");
 
-    // Get form field values
-    let title = document.querySelector("#title").value;
-    let description = document.querySelector("#description").value;
-    let attendees = document.querySelector("#attendees").value.split(",");
-    let startDate = new Date(document.querySelector("#start-date").value);
-    let duration = document.querySelector("#duration").value; // This should be in minutes
+    //* Clear previous slots
+    slotsContainer.innerHTML =
+        "<label class='block text-gray-700 text-sm font-bold mb-2'>Available Slots</label>";
 
-    // Create attendees array for the Google Calendar API
-    let attendeesArray = attendees.map(function (email) {
-        return { email: email.trim() }; // trim() removes any extra whitespace
+    freeSlots.forEach((slot, index) => {
+        const radioWrapper = document.createElement("div");
+        radioWrapper.className = "mt-2";
+
+        const radio = document.createElement("input");
+        radio.type = "radio";
+        radio.id = `slot${index}`;
+        radio.name = "slot";
+        radio.value = slot;
+        radio.required = true;
+
+        const label = document.createElement("label");
+        label.htmlFor = `slot${index}`;
+        label.textContent = new Date(slot).toLocaleString();
+        label.className = "ml-2";
+
+        radioWrapper.appendChild(radio);
+        radioWrapper.appendChild(label);
+        slotsContainer.appendChild(radioWrapper);
     });
+}
 
-    // Calculate end date based on duration
-    let endDate = new Date(startDate.getTime() + duration * 60000); // duration is in minutes, so multiply by 60,000 to convert it to milliseconds
-
-    // Create event object
-    let event = {
-        summary: title,
-        description: description,
-        start: {
-            dateTime: startDate.toISOString(), // Needs to be in ISO string format
-            timeZone: userTimeZone, // Replace with user's timezone
-        },
-        end: {
-            dateTime: endDate.toISOString(), // Needs to be in ISO string format
-            timeZone: userTimeZone, // Replace with user's timezone
-        },
-        attendees: attendeesArray,
+function checkAvailability(
+    startDate,
+    endDate,
+    attendeesArray,
+    duration,
+    accessToken
+) {
+    let availabilityRequest = {
+        timeMin: startDate.toISOString(),
+        timeMax: endDate.toISOString(),
+        timeZone: userTimeZone,
+        items: attendeesArray,
     };
 
-    // Convert event object to JSON
-    let eventJson = JSON.stringify(event);
-
-    // POST request to Google Calendar API
-    fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`,
-        {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-                "Content-Type": "application/json",
-            },
-            body: eventJson,
-        }
-    )
+    fetch("https://www.googleapis.com/calendar/v3/freeBusy", {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(availabilityRequest),
+    })
         .then((response) => response.json())
         .then((data) => {
-            console.log("Event created:", data);
-            // Open the event in a new tab
-            window.open(data.htmlLink, "_blank");
+            console.log("Freebusy response:", data);
+
+            let busy = data.calendars[attendeesArray[0].id].busy;
+            let freeSlots = [];
+
+            if (!busy || busy.length === 0) {
+                console.log("No busy slots found.");
+
+                //* Generate all possible slots for the day
+                let currentSlot = new Date(startDate);
+                while (currentSlot < endDate) {
+                    freeSlots.push(new Date(currentSlot).toISOString());
+                    currentSlot.setMinutes(
+                        currentSlot.getMinutes() + Number(duration)
+                    );
+                }
+            } else {
+                busy.forEach((busySlot, i) => {
+                    if (!busySlot.start || !busySlot.end) {
+                        console.error(
+                            `Busy slot ${i} does not have start and end time`
+                        );
+                        return;
+                    }
+
+                    if (
+                        i === 0 &&
+                        new Date(busySlot.start) - startDate >= duration * 60000
+                    ) {
+                        freeSlots.push(startDate.toISOString());
+                    } else if (
+                        i > 0 &&
+                        new Date(busySlot.start) - new Date(busy[i - 1].end) >=
+                            duration * 60000
+                    ) {
+                        freeSlots.push(new Date(busy[i - 1].end).toISOString());
+                    }
+
+                    if (
+                        i === busy.length - 1 &&
+                        endDate - new Date(busySlot.end) >= duration * 60000
+                    ) {
+                        freeSlots.push(new Date(busySlot.end).toISOString());
+                    }
+                });
+            }
+
+            displayAvailableSlots(freeSlots);
         })
+
         .catch((error) => {
-            console.error("Failed to create event:", error);
+            console.error("Failed to fetch free/busy information:", error);
         });
+}
+
+document
+    .querySelector("#check-availability-btn")
+    .addEventListener("click", (e) => {
+        e.preventDefault();
+
+        let attendees = document.querySelector("#attendees").value.split(",");
+        let startDate = new Date(document.querySelector("#start-date").value);
+        let duration = document.querySelector("#duration").value;
+
+        attendeesArray = attendees.map(function (email) {
+            return { id: email.trim() };
+        });
+
+        startDate.setHours(0, 0, 0, 0);
+
+        let endDate = new Date(startDate);
+        endDate.setHours(23, 59, 59, 999);
+
+        checkAvailability(
+            startDate,
+            endDate,
+            attendeesArray,
+            duration,
+            accessToken
+        );
+    });
+
+document.querySelector("#meeting-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    let title = document.querySelector("#title").value;
+    let description = document.querySelector("#description").value;
+    let duration = document.querySelector("#duration").value;
+
+    document.querySelector("#submit-btn").disabled = true;
+
+    let selectedSlot = document.querySelector('input[name="slot"]:checked');
+    let slot;
+    if (selectedSlot) {
+        slot = selectedSlot.value;
+    } else {
+        console.log("Please select a slot before submitting the form.");
+        return;
+    }
+
+    if (slot) {
+        let eventStartDate = new Date(slot);
+        let eventEndDate = new Date(
+            eventStartDate.getTime() + duration * 60000
+        );
+
+        let event = {
+            summary: title,
+            description: description,
+            start: {
+                dateTime: eventStartDate.toISOString(),
+                timeZone: userTimeZone,
+            },
+            end: {
+                dateTime: eventEndDate.toISOString(),
+                timeZone: userTimeZone,
+            },
+            attendees: attendeesArray.map(function (attendee) {
+                return { email: attendee.id };
+            }),
+        };
+
+        let eventJson = JSON.stringify(event);
+
+        //* POST request to Google Calendar API
+        fetch(
+            `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`,
+            {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    "Content-Type": "application/json",
+                },
+                body: eventJson,
+            }
+        )
+            .then((response) => response.json())
+            .then((data) => {
+                console.log("Event created:", data);
+                // Open the event in a new tab
+                window.open(data.htmlLink, "_blank");
+            })
+            .catch((error) => {
+                console.error("Failed to create event:", error);
+                document.querySelector("#submit-btn").disabled = false;
+            });
+    } else {
+        console.log("Please select a slot before submitting the form.");
+        document.querySelector("#submit-btn").disabled = false;
+    }
 });
