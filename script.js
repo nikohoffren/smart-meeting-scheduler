@@ -167,7 +167,7 @@ function checkAvailability(
     duration,
     workingHoursOption
 ) {
-    // Setting the start and end time according to the selected working hours
+    //* Setting the start and end time according to the selected working hours
     startDate.setHours(workingHours[workingHoursOption].start, 0, 0, 0);
     endDate.setHours(workingHours[workingHoursOption].end, 0, 0, 0);
 
@@ -194,11 +194,9 @@ function checkAvailability(
                 let busy = data.calendars[attendeesArray[0].id].busy;
                 let freeSlots = [];
 
-                // Generate all possible slots for the day
                 let currentSlot = new Date(startDate);
                 let endWorkingHours = new Date(endDate);
 
-                // Function to add new free slots based on the currentSlot and duration
                 const addFreeSlots = (startSlot, endSlot, durationMinutes) => {
                     console.log(
                         `Add free slots from ${startSlot} to ${endSlot}`
@@ -228,7 +226,6 @@ function checkAvailability(
                     console.log("No busy slots found.");
                     addFreeSlots(currentSlot, endWorkingHours, duration);
                 } else {
-                    // Check if the only busy slot spans the whole day
                     if (
                         busy.length === 1 &&
                         new Date(busy[0].start).getTime() ===
@@ -241,14 +238,11 @@ function checkAvailability(
                             let busySlotStart = new Date(busySlot.start);
                             let busySlotEnd = new Date(busySlot.end);
 
-                            // Add free slots before the busy slot
                             addFreeSlots(currentSlot, busySlotStart, duration);
 
-                            // Move the currentSlot to after the current busy slot
                             currentSlot = busySlotEnd;
                         });
 
-                        // Add free slots after the last busy slot
                         if (
                             currentSlot.getHours() <
                             workingHours[workingHoursOption].end
@@ -295,25 +289,22 @@ function createEvent(event) {
         .then((response) => response.json())
         .then((data) => {
             console.log("Event created:", data);
-            // Open the event in a new tab
+            //* Open the event in a new tab
             window.open(data.htmlLink, "_blank");
 
-            // Add a new busy slot for this event
             let newBusySlot = {
                 start: data.start.dateTime,
                 end: data.end.dateTime,
             };
-            // Assume 'busy' is the array containing busy slots
+
             busy.push(newBusySlot);
 
             return data;
         });
 }
 
-// Get the dropdown menu
 let dropdownMenu = document.querySelector(".hidden");
 
-// Event listener for the working hours dropdown
 document.querySelectorAll("[role='menuitem']").forEach((item) => {
     item.addEventListener("click", (e) => {
         e.preventDefault();
@@ -325,7 +316,6 @@ document.querySelectorAll("[role='menuitem']").forEach((item) => {
     });
 });
 
-// Event listener for the dropdown button
 document.querySelector("#dropdown-btn").addEventListener("click", function (e) {
     e.preventDefault();
     dropdownMenu.classList.toggle("hidden");
@@ -401,7 +391,6 @@ document.querySelector("#meeting-form").addEventListener("submit", (e) => {
         createEvent(event)
             .then(() => {
                 document.querySelector("#submit-btn").disabled = false;
-                // You might want to clear the form here
             })
             .catch((error) => {
                 console.error("Failed to create event:", error);
