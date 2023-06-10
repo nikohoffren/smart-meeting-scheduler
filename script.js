@@ -46,7 +46,7 @@ function initGoogleOAuth() {
     getAccessToken()
         .then((token) => {
             accessToken = token;
-            fetchEvents(accessToken);
+            fetchEvents();
         })
         .catch((error) => console.log(error));
 }
@@ -226,17 +226,16 @@ function checkAvailability(
 
                 if (!Array.isArray(busy) || busy.length === 0) {
                     console.log("No busy slots found.");
-                    addFreeSlots(currentSlot, endWorkingHours);
+                    addFreeSlots(currentSlot, endWorkingHours, duration);
                 } else {
-                    // If the only busy slot spans the whole day, treat the day as entirely free
+                    // Check if the only busy slot spans the whole day
                     if (
                         busy.length === 1 &&
                         new Date(busy[0].start).getTime() ===
                             startDate.getTime() &&
                         new Date(busy[0].end).getTime() === endDate.getTime()
                     ) {
-                        console.log("No meetings on this day.");
-                        addFreeSlots(currentSlot, endWorkingHours);
+                        console.log("The whole day is busy.");
                     } else {
                         busy.forEach((busySlot, i) => {
                             let busySlotStart = new Date(busySlot.start);
@@ -250,7 +249,16 @@ function checkAvailability(
                         });
 
                         // Add free slots after the last busy slot
-                        addFreeSlots(currentSlot, endWorkingHours, duration);
+                        if (
+                            currentSlot.getHours() <
+                            workingHours[workingHoursOption].end
+                        ) {
+                            addFreeSlots(
+                                currentSlot,
+                                endWorkingHours,
+                                duration
+                            );
+                        }
                     }
                 }
 
