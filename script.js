@@ -199,12 +199,16 @@ function checkAvailability(
                 let endWorkingHours = new Date(endDate);
 
                 // Function to add new free slots based on the currentSlot and duration
-                const addFreeSlots = (startSlot, endSlot) => {
+                const addFreeSlots = (startSlot, endSlot, durationMinutes) => {
                     console.log(
                         `Add free slots from ${startSlot} to ${endSlot}`
                     );
+                    let nextSlotEndTime = new Date(
+                        startSlot.getTime() + durationMinutes * 60000
+                    );
                     while (
                         startSlot < endSlot &&
+                        nextSlotEndTime <= endSlot &&
                         startSlot.getHours() <
                             workingHours[workingHoursOption].end
                     ) {
@@ -212,6 +216,9 @@ function checkAvailability(
                         freeSlots.push(new Date(startSlot).toISOString());
                         startSlot.setMinutes(
                             startSlot.getMinutes() + Number(duration)
+                        );
+                        nextSlotEndTime = new Date(
+                            startSlot.getTime() + durationMinutes * 60000
                         );
                         console.log(`Next slot: ${startSlot}`);
                     }
@@ -236,14 +243,14 @@ function checkAvailability(
                             let busySlotEnd = new Date(busySlot.end);
 
                             // Add free slots before the busy slot
-                            addFreeSlots(currentSlot, busySlotStart);
+                            addFreeSlots(currentSlot, busySlotStart, duration);
 
                             // Move the currentSlot to after the current busy slot
                             currentSlot = busySlotEnd;
                         });
 
                         // Add free slots after the last busy slot
-                        addFreeSlots(currentSlot, endWorkingHours);
+                        addFreeSlots(currentSlot, endWorkingHours, duration);
                     }
                 }
 
@@ -260,6 +267,39 @@ function checkAvailability(
                 console.error("Failed to fetch free/busy information:", error);
             });
     });
+}
+
+function createEvent(event) {
+    let eventJson = JSON.stringify(event);
+
+    //* POST request to Google Calendar API
+    return fetch(
+        `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`,
+        {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+            },
+            body: eventJson,
+        }
+    )
+        .then((response) => response.json())
+        .then((data) => {
+            console.log("Event created:", data);
+            // Open the event in a new tab
+            window.open(data.htmlLink, "_blank");
+
+            // Add a new busy slot for this event
+            let newBusySlot = {
+                start: data.start.dateTime,
+                end: data.end.dateTime,
+            };
+            // Assume 'busy' is the array containing busy slots
+            busy.push(newBusySlot);
+
+            return data;
+        });
 }
 
 // Get the dropdown menu
@@ -350,25 +390,10 @@ document.querySelector("#meeting-form").addEventListener("submit", (e) => {
             }),
         };
 
-        let eventJson = JSON.stringify(event);
-
-        //* POST request to Google Calendar API
-        fetch(
-            `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`,
-            {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                    "Content-Type": "application/json",
-                },
-                body: eventJson,
-            }
-        )
-            .then((response) => response.json())
-            .then((data) => {
-                console.log("Event created:", data);
-                // Open the event in a new tab
-                window.open(data.htmlLink, "_blank");
+        createEvent(event)
+            .then(() => {
+                document.querySelector("#submit-btn").disabled = false;
+                // You might want to clear the form here
             })
             .catch((error) => {
                 console.error("Failed to create event:", error);
