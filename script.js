@@ -5,6 +5,21 @@ let timeMin = new Date().toISOString();
 let accessToken;
 let userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 let attendeesArray = [];
+let selectedWorkingHours = "Anytime";
+
+const workingHoursOptions = {
+    Anytime: "Anytime",
+    "Morning (8am - 12pm)": "Morning",
+    "Afternoon (12pm - 5pm)": "Afternoon",
+    "Evening (5pm - 9pm)": "Evening",
+};
+
+const workingHours = {
+    Anytime: { start: 0, end: 24 },
+    Morning: { start: 8, end: 12 },
+    Afternoon: { start: 12, end: 17 },
+    Evening: { start: 17, end: 21 },
+};
 
 const scopes = "https://www.googleapis.com/auth/calendar";
 
@@ -136,8 +151,11 @@ function checkAvailability(
     endDate,
     attendeesArray,
     duration,
-    accessToken
+    accessToken,
+    workingHoursOption
 ) {
+    let currentSlot, endWorkingHours;
+
     let availabilityRequest = {
         timeMin: startDate.toISOString(),
         timeMax: endDate.toISOString(),
@@ -164,8 +182,22 @@ function checkAvailability(
                 console.log("No busy slots found.");
 
                 //* Generate all possible slots for the day
-                let currentSlot = new Date(startDate);
-                while (currentSlot < endDate) {
+                currentSlot = new Date(startDate);
+                currentSlot.setHours(
+                    workingHours[workingHoursOption].start,
+                    0,
+                    0,
+                    0
+                );
+                endWorkingHours = new Date(currentSlot);
+                endWorkingHours.setHours(
+                    workingHours[workingHoursOption].end,
+                    0,
+                    0,
+                    0
+                );
+
+                while (currentSlot < endWorkingHours) {
                     freeSlots.push(new Date(currentSlot).toISOString());
                     currentSlot.setMinutes(
                         currentSlot.getMinutes() + Number(duration)
@@ -173,9 +205,14 @@ function checkAvailability(
                 }
             } else {
                 busy.forEach((busySlot, i) => {
-                    if (!busySlot.start || !busySlot.end) {
+                    if (
+                        !busySlot ||
+                        typeof busySlot !== "object" ||
+                        !busySlot.start ||
+                        !busySlot.end
+                    ) {
                         console.error(
-                            `Busy slot ${i} does not have start and end time`
+                            `Busy slot ${i} does not exist, is not an object, or does not have start and end time`
                         );
                         return;
                     }
@@ -201,6 +238,12 @@ function checkAvailability(
                     }
                 });
             }
+            console.log("Start date:", startDate);
+            console.log("End date:", endDate);
+            console.log("Working hours option:", workingHoursOption);
+            console.log("Working hours:", workingHours[workingHoursOption]);
+            console.log("Current slot:", currentSlot);
+            console.log("End working hours:", endWorkingHours);
 
             displayAvailableSlots(freeSlots);
         })
@@ -209,6 +252,27 @@ function checkAvailability(
             console.error("Failed to fetch free/busy information:", error);
         });
 }
+
+// Get the dropdown menu
+let dropdownMenu = document.querySelector(".hidden");
+
+// Event listener for the working hours dropdown
+document.querySelectorAll("[role='menuitem']").forEach((item) => {
+    item.addEventListener("click", (e) => {
+        e.preventDefault();
+        selectedWorkingHours = workingHoursOptions[e.target.textContent];
+        console.log("Selected Working Hours:", selectedWorkingHours);
+        document.querySelector("#dropdown-btn").textContent =
+            e.target.textContent;
+        dropdownMenu.classList.add("hidden");
+    });
+});
+
+// Event listener for the dropdown button
+document.querySelector("#dropdown-btn").addEventListener("click", function (e) {
+    e.preventDefault();
+    dropdownMenu.classList.toggle("hidden");
+});
 
 document
     .querySelector("#check-availability-btn")
@@ -233,7 +297,8 @@ document
             endDate,
             attendeesArray,
             duration,
-            accessToken
+            accessToken,
+            selectedWorkingHours
         );
     });
 

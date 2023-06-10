@@ -107,6 +107,70 @@
                     />
                 </div>
 
+                <!-- Working Hours dropdown -->
+                <div class="mb-4 relative inline-block text-left">
+                    <div>
+                        <button
+                            type="button"
+                            class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500"
+                            id="dropdown-btn"
+                            aria-haspopup="true"
+                            aria-expanded="true"
+                        >
+                            Working Hours
+                            <svg
+                                class="-mr-1 ml-2 h-5 w-5"
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    fill-rule="evenodd"
+                                    d="M10 14a2 2 0 001.41-.59l2.83-2.83a2 2 0 00-2.83-2.83L10 9.17l-1.41-1.42a2 2 0 00-2.83 2.83l2.83 2.83A2 2 0 0010 14z"
+                                    clip-rule="evenodd"
+                                />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div
+                        class="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden"
+                    >
+                        <div
+                            class="py-1"
+                            role="menu"
+                            aria-orientation="vertical"
+                            aria-labelledby="dropdown-btn"
+                        >
+                            <a
+                                href="#"
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                role="menuitem"
+                                >Anytime</a
+                            >
+                            <a
+                                href="#"
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                role="menuitem"
+                                >Morning (8am - 12pm)</a
+                            >
+                            <a
+                                href="#"
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                role="menuitem"
+                                >Afternoon (12pm - 5pm)</a
+                            >
+                            <a
+                                href="#"
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                role="menuitem"
+                                >Evening (5pm - 9pm)</a
+                            >
+                        </div>
+                    </div>
+                </div>
+
                 <div class="flex items-center justify-between">
                     <button
                         id="check-availability-btn"
