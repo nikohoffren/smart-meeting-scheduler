@@ -154,7 +154,9 @@ function checkAvailability(
     accessToken,
     workingHoursOption
 ) {
-    let currentSlot, endWorkingHours;
+    // Setting the start and end time according to the selected working hours
+    startDate.setHours(workingHours[workingHoursOption].start, 0, 0, 0);
+    endDate.setHours(workingHours[workingHoursOption].end, 0, 0, 0);
 
     let availabilityRequest = {
         timeMin: startDate.toISOString(),
@@ -178,24 +180,11 @@ function checkAvailability(
             let busy = data.calendars[attendeesArray[0].id].busy;
             let freeSlots = [];
 
+            let currentSlot = new Date(startDate);
+            let endWorkingHours = new Date(endDate);
+
             if (!busy || busy.length === 0) {
                 console.log("No busy slots found.");
-
-                //* Generate all possible slots for the day
-                currentSlot = new Date(startDate);
-                currentSlot.setHours(
-                    workingHours[workingHoursOption].start,
-                    0,
-                    0,
-                    0
-                );
-                endWorkingHours = new Date(currentSlot);
-                endWorkingHours.setHours(
-                    workingHours[workingHoursOption].end,
-                    0,
-                    0,
-                    0
-                );
 
                 while (currentSlot < endWorkingHours) {
                     freeSlots.push(new Date(currentSlot).toISOString());
@@ -204,40 +193,37 @@ function checkAvailability(
                     );
                 }
             } else {
+                let previousBusySlotEnd = startDate;
+
                 busy.forEach((busySlot, i) => {
-                    if (
-                        !busySlot ||
-                        typeof busySlot !== "object" ||
-                        !busySlot.start ||
-                        !busySlot.end
-                    ) {
-                        console.error(
-                            `Busy slot ${i} does not exist, is not an object, or does not have start and end time`
-                        );
-                        return;
+                    let busySlotStart = new Date(busySlot.start);
+                    let busySlotEnd = new Date(busySlot.end);
+
+                    let gap = busySlotStart - previousBusySlotEnd;
+
+                    if (gap >= duration * 60000) {
+                        while (previousBusySlotEnd < busySlotStart) {
+                            freeSlots.push(
+                                new Date(previousBusySlotEnd).toISOString()
+                            );
+                            previousBusySlotEnd.setMinutes(
+                                previousBusySlotEnd.getMinutes() +
+                                    Number(duration)
+                            );
+                        }
                     }
 
-                    if (
-                        i === 0 &&
-                        new Date(busySlot.start) - startDate >= duration * 60000
-                    ) {
-                        freeSlots.push(startDate.toISOString());
-                    } else if (
-                        i > 0 &&
-                        new Date(busySlot.start) - new Date(busy[i - 1].end) >=
-                            duration * 60000
-                    ) {
-                        freeSlots.push(new Date(busy[i - 1].end).toISOString());
-                    }
-
-                    if (
-                        i === busy.length - 1 &&
-                        endDate - new Date(busySlot.end) >= duration * 60000
-                    ) {
-                        freeSlots.push(new Date(busySlot.end).toISOString());
-                    }
+                    previousBusySlotEnd = busySlotEnd;
                 });
+
+                while (previousBusySlotEnd < endWorkingHours) {
+                    freeSlots.push(new Date(previousBusySlotEnd).toISOString());
+                    previousBusySlotEnd.setMinutes(
+                        previousBusySlotEnd.getMinutes() + Number(duration)
+                    );
+                }
             }
+
             console.log("Start date:", startDate);
             console.log("End date:", endDate);
             console.log("Working hours option:", workingHoursOption);
@@ -247,12 +233,10 @@ function checkAvailability(
 
             displayAvailableSlots(freeSlots);
         })
-
         .catch((error) => {
             console.error("Failed to fetch free/busy information:", error);
         });
 }
-
 // Get the dropdown menu
 let dropdownMenu = document.querySelector(".hidden");
 
