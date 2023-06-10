@@ -23,24 +23,32 @@ const workingHours = {
 
 const scopes = "https://www.googleapis.com/auth/calendar";
 
+function getAccessToken() {
+    return new Promise((resolve, reject) => {
+        chrome.identity.getAuthToken(
+            { interactive: true, scopes: [scopes] },
+            (token) => {
+                if (chrome.runtime.lastError) {
+                    console.log(chrome.runtime.lastError.message);
+                    reject(chrome.runtime.lastError);
+                    return;
+                }
+                resolve(token);
+            }
+        );
+    });
+}
+
 //* Initialize Google OAuth on window load
 window.onload = initGoogleOAuth;
 
 function initGoogleOAuth() {
-    //* Start Google auth flow.
-    chrome.identity.getAuthToken(
-        { interactive: true, scopes: [scopes] },
-        (token) => {
-            if (chrome.runtime.lastError) {
-                console.log(chrome.runtime.lastError.message);
-                return;
-            }
-
+    getAccessToken()
+        .then((token) => {
             accessToken = token;
-
             fetchEvents(accessToken);
-        }
-    );
+        })
+        .catch((error) => console.log(error));
 }
 
 function displayEvents(events) {
@@ -98,22 +106,28 @@ function displayEvents(events) {
     });
 }
 
-function fetchEvents(accessToken) {
-    fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?maxResults=${maxResults}&timeMin=${timeMin}`,
-        {
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-            },
-        }
-    )
-        .then((response) => response.json())
-        .then((data) => {
-            console.log("Fetched events:", data.items);
-            displayEvents(data.items);
+function fetchEvents() {
+    getAccessToken()
+        .then((token) => {
+            fetch(
+                `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?maxResults=${maxResults}&timeMin=${timeMin}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            )
+                .then((response) => response.json())
+                .then((data) => {
+                    console.log("Fetched events:", data.items);
+                    displayEvents(data.items);
+                })
+                .catch((error) => {
+                    console.error("Failed to fetch events:", error);
+                });
         })
         .catch((error) => {
-            console.error("Failed to fetch events:", error);
+            console.error("Failed to get access token:", error);
         });
 }
 
@@ -151,7 +165,6 @@ function checkAvailability(
     endDate,
     attendeesArray,
     duration,
-    accessToken,
     workingHoursOption
 ) {
     // Setting the start and end time according to the selected working hours
@@ -165,80 +178,90 @@ function checkAvailability(
         items: attendeesArray,
     };
 
-    fetch("https://www.googleapis.com/calendar/v3/freeBusy", {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(availabilityRequest),
-    })
-        .then((response) => response.json())
-        .then((data) => {
-            console.log("Freebusy response:", data);
+    getAccessToken().then((token) => {
+        fetch("https://www.googleapis.com/calendar/v3/freeBusy", {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(availabilityRequest),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                console.log("Freebusy response:", data);
 
-            let busy = data.calendars[attendeesArray[0].id].busy;
-            let freeSlots = [];
+                let busy = data.calendars[attendeesArray[0].id].busy;
+                let freeSlots = [];
 
-            // Generate all possible slots for the day
-            let currentSlot = new Date(startDate);
-            let endWorkingHours = new Date(endDate);
+                // Generate all possible slots for the day
+                let currentSlot = new Date(startDate);
+                let endWorkingHours = new Date(endDate);
 
-            // Function to add new free slots based on the currentSlot and duration
-            const addFreeSlots = (startSlot, endSlot) => {
-                console.log(`Add free slots from ${startSlot} to ${endSlot}`);
-                while (startSlot < endSlot) {
-                    console.log(`Adding slot: ${startSlot}`);
-                    freeSlots.push(new Date(startSlot).toISOString());
-                    startSlot.setMinutes(
-                        startSlot.getMinutes() + Number(duration)
+                // Function to add new free slots based on the currentSlot and duration
+                const addFreeSlots = (startSlot, endSlot) => {
+                    console.log(
+                        `Add free slots from ${startSlot} to ${endSlot}`
                     );
-                    console.log(`Next slot: ${startSlot}`);
-                }
-            };
+                    while (
+                        startSlot < endSlot &&
+                        startSlot.getHours() <
+                            workingHours[workingHoursOption].end
+                    ) {
+                        console.log(`Adding slot: ${startSlot}`);
+                        freeSlots.push(new Date(startSlot).toISOString());
+                        startSlot.setMinutes(
+                            startSlot.getMinutes() + Number(duration)
+                        );
+                        console.log(`Next slot: ${startSlot}`);
+                    }
+                };
 
-            if (!Array.isArray(busy) || busy.length === 0) {
-                console.log("No busy slots found.");
-                addFreeSlots(currentSlot, endWorkingHours);
-            } else {
-                // If the only busy slot spans the whole day, treat the day as entirely free
-                if (
-                    busy.length === 1 &&
-                    new Date(busy[0].start).getTime() === startDate.getTime() &&
-                    new Date(busy[0].end).getTime() === endDate.getTime()
-                ) {
-                    console.log("No meetings on this day.");
+                if (!Array.isArray(busy) || busy.length === 0) {
+                    console.log("No busy slots found.");
                     addFreeSlots(currentSlot, endWorkingHours);
                 } else {
-                    busy.forEach((busySlot, i) => {
-                        let busySlotStart = new Date(busySlot.start);
-                        let busySlotEnd = new Date(busySlot.end);
+                    // If the only busy slot spans the whole day, treat the day as entirely free
+                    if (
+                        busy.length === 1 &&
+                        new Date(busy[0].start).getTime() ===
+                            startDate.getTime() &&
+                        new Date(busy[0].end).getTime() === endDate.getTime()
+                    ) {
+                        console.log("No meetings on this day.");
+                        addFreeSlots(currentSlot, endWorkingHours);
+                    } else {
+                        busy.forEach((busySlot, i) => {
+                            let busySlotStart = new Date(busySlot.start);
+                            let busySlotEnd = new Date(busySlot.end);
 
-                        // Add free slots before the busy slot
-                        addFreeSlots(currentSlot, busySlotStart);
+                            // Add free slots before the busy slot
+                            addFreeSlots(currentSlot, busySlotStart);
 
-                        // Move the currentSlot to after the current busy slot
-                        currentSlot = busySlotEnd;
-                    });
+                            // Move the currentSlot to after the current busy slot
+                            currentSlot = busySlotEnd;
+                        });
 
-                    // Add free slots after the last busy slot
-                    addFreeSlots(currentSlot, endWorkingHours);
+                        // Add free slots after the last busy slot
+                        addFreeSlots(currentSlot, endWorkingHours);
+                    }
                 }
-            }
 
-            console.log("Start date:", startDate);
-            console.log("End date:", endDate);
-            console.log("Working hours option:", workingHoursOption);
-            console.log("Working hours:", workingHours[workingHoursOption]);
-            console.log("Current slot:", currentSlot);
-            console.log("End working hours:", endWorkingHours);
+                console.log("Start date:", startDate);
+                console.log("End date:", endDate);
+                console.log("Working hours option:", workingHoursOption);
+                console.log("Working hours:", workingHours[workingHoursOption]);
+                console.log("Current slot:", currentSlot);
+                console.log("End working hours:", endWorkingHours);
 
-            displayAvailableSlots(freeSlots);
-        })
-        .catch((error) => {
-            console.error("Failed to fetch free/busy information:", error);
-        });
+                displayAvailableSlots(freeSlots);
+            })
+            .catch((error) => {
+                console.error("Failed to fetch free/busy information:", error);
+            });
+    });
 }
+
 // Get the dropdown menu
 let dropdownMenu = document.querySelector(".hidden");
 
@@ -283,7 +306,6 @@ document
             endDate,
             attendeesArray,
             duration,
-            accessToken,
             selectedWorkingHours
         );
     });
