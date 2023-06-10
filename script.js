@@ -180,47 +180,49 @@ function checkAvailability(
             let busy = data.calendars[attendeesArray[0].id].busy;
             let freeSlots = [];
 
+            // Generate all possible slots for the day
             let currentSlot = new Date(startDate);
             let endWorkingHours = new Date(endDate);
 
-            if (!busy || busy.length === 0) {
-                console.log("No busy slots found.");
-
-                while (currentSlot < endWorkingHours) {
-                    freeSlots.push(new Date(currentSlot).toISOString());
-                    currentSlot.setMinutes(
-                        currentSlot.getMinutes() + Number(duration)
+            // Function to add new free slots based on the currentSlot and duration
+            const addFreeSlots = (startSlot, endSlot) => {
+                console.log(`Add free slots from ${startSlot} to ${endSlot}`);
+                while (startSlot < endSlot) {
+                    console.log(`Adding slot: ${startSlot}`);
+                    freeSlots.push(new Date(startSlot).toISOString());
+                    startSlot.setMinutes(
+                        startSlot.getMinutes() + Number(duration)
                     );
+                    console.log(`Next slot: ${startSlot}`);
                 }
+            };
+
+            if (!Array.isArray(busy) || busy.length === 0) {
+                console.log("No busy slots found.");
+                addFreeSlots(currentSlot, endWorkingHours);
             } else {
-                let previousBusySlotEnd = startDate;
+                // If the only busy slot spans the whole day, treat the day as entirely free
+                if (
+                    busy.length === 1 &&
+                    new Date(busy[0].start).getTime() === startDate.getTime() &&
+                    new Date(busy[0].end).getTime() === endDate.getTime()
+                ) {
+                    console.log("No meetings on this day.");
+                    addFreeSlots(currentSlot, endWorkingHours);
+                } else {
+                    busy.forEach((busySlot, i) => {
+                        let busySlotStart = new Date(busySlot.start);
+                        let busySlotEnd = new Date(busySlot.end);
 
-                busy.forEach((busySlot, i) => {
-                    let busySlotStart = new Date(busySlot.start);
-                    let busySlotEnd = new Date(busySlot.end);
+                        // Add free slots before the busy slot
+                        addFreeSlots(currentSlot, busySlotStart);
 
-                    let gap = busySlotStart - previousBusySlotEnd;
+                        // Move the currentSlot to after the current busy slot
+                        currentSlot = busySlotEnd;
+                    });
 
-                    if (gap >= duration * 60000) {
-                        while (previousBusySlotEnd < busySlotStart) {
-                            freeSlots.push(
-                                new Date(previousBusySlotEnd).toISOString()
-                            );
-                            previousBusySlotEnd.setMinutes(
-                                previousBusySlotEnd.getMinutes() +
-                                    Number(duration)
-                            );
-                        }
-                    }
-
-                    previousBusySlotEnd = busySlotEnd;
-                });
-
-                while (previousBusySlotEnd < endWorkingHours) {
-                    freeSlots.push(new Date(previousBusySlotEnd).toISOString());
-                    previousBusySlotEnd.setMinutes(
-                        previousBusySlotEnd.getMinutes() + Number(duration)
-                    );
+                    // Add free slots after the last busy slot
+                    addFreeSlots(currentSlot, endWorkingHours);
                 }
             }
 
