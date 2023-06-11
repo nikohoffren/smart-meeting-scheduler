@@ -5,6 +5,7 @@ let timeMin = new Date().toISOString();
 let accessToken;
 let userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 let attendeesArray = [];
+let busy = [];
 let selectedWorkingHours = "Anytime";
 
 const workingHoursOptions = {
@@ -39,7 +40,13 @@ function getUserEmail(token) {
 function getAccessToken() {
     return new Promise((resolve, reject) => {
         chrome.identity.getAuthToken(
-            { interactive: true, scopes: ['https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/userinfo.email'] },
+            {
+                interactive: true,
+                scopes: [
+                    "https://www.googleapis.com/auth/calendar",
+                    "https://www.googleapis.com/auth/userinfo.email",
+                ],
+            },
             (token) => {
                 if (chrome.runtime.lastError) {
                     console.log(chrome.runtime.lastError.message);
@@ -217,7 +224,7 @@ function checkAvailability(
             .then((data) => {
                 console.log("Freebusy response:", data);
 
-                let busy = data.calendars[attendeesArray[0].id].busy;
+                busy = data.calendars[attendeesArray[0].id].busy;
                 let freeSlots = [];
 
                 let currentSlot = new Date(startDate);
@@ -352,7 +359,10 @@ document
     .addEventListener("click", (e) => {
         e.preventDefault();
 
-        let attendees = Array.from(document.querySelectorAll('.attendee'), input => input.value);
+        let attendees = Array.from(
+            document.querySelectorAll(".attendee"),
+            (input) => input.value
+        );
         let startDate = new Date(document.querySelector("#start-date").value);
         let duration = document.querySelector("#duration").value;
 
@@ -420,6 +430,9 @@ document.querySelector("#meeting-form").addEventListener("submit", (e) => {
             })
             .catch((error) => {
                 console.error("Failed to create event:", error);
+                console.error("Error name:", error.name);
+                console.error("Error message:", error.message);
+                console.error("Error stack:", error.stack);
                 document.querySelector("#submit-btn").disabled = false;
             });
     } else {
