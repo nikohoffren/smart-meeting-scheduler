@@ -27,14 +27,14 @@ const scopes = [
     "https://www.googleapis.com/auth/userinfo.email",
 ];
 
-function getUserEmail(token) {
-    return fetch("https://www.googleapis.com/oauth2/v1/userinfo?alt=json", {
+async function getUserEmail(token) {
+    const response = await fetch("https://www.googleapis.com/oauth2/v1/userinfo?alt=json", {
         headers: {
             Authorization: `Bearer ${token}`,
         },
-    })
-        .then((response) => response.json())
-        .then((data) => data.email);
+    });
+    const data = await response.json();
+    return data.email;
 }
 
 function getAccessToken() {
@@ -304,11 +304,11 @@ function checkAvailability(
     });
 }
 
-function createEvent(event) {
+async function createEvent(event) {
     let eventJson = JSON.stringify(event);
 
     //* POST request to Google Calendar API
-    return fetch(
+    const response = await fetch(
         `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`,
         {
             method: "POST",
@@ -318,22 +318,17 @@ function createEvent(event) {
             },
             body: eventJson,
         }
-    )
-        .then((response) => response.json())
-        .then((data) => {
-            console.log("Event created:", data);
-            //* Open the event in a new tab
-            window.open(data.htmlLink, "_blank");
-
-            let newBusySlot = {
-                start: data.start.dateTime,
-                end: data.end.dateTime,
-            };
-
-            busy.push(newBusySlot);
-
-            return data;
-        });
+    );
+    const data = await response.json();
+    console.log("Event created:", data);
+    //* Open the event in a new tab
+    window.open(data.htmlLink, "_blank");
+    let newBusySlot = {
+        start: data.start.dateTime,
+        end: data.end.dateTime,
+    };
+    busy.push(newBusySlot);
+    return data;
 }
 
 let dropdownMenu = document.querySelector(".hidden");
