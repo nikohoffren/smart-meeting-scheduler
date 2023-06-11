@@ -21,12 +21,25 @@ const workingHours = {
     Evening: { start: 17, end: 21 },
 };
 
-const scopes = "https://www.googleapis.com/auth/calendar";
+const scopes = [
+    "https://www.googleapis.com/auth/calendar",
+    "https://www.googleapis.com/auth/userinfo.email",
+];
+
+function getUserEmail(token) {
+    return fetch("https://www.googleapis.com/oauth2/v1/userinfo?alt=json", {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
+        .then((response) => response.json())
+        .then((data) => data.email);
+}
 
 function getAccessToken() {
     return new Promise((resolve, reject) => {
         chrome.identity.getAuthToken(
-            { interactive: true, scopes: [scopes] },
+            { interactive: true, scopes: ['https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/userinfo.email'] },
             (token) => {
                 if (chrome.runtime.lastError) {
                     console.log(chrome.runtime.lastError.message);
@@ -40,7 +53,20 @@ function getAccessToken() {
 }
 
 //* Initialize Google OAuth on window load
-window.onload = initGoogleOAuth;
+window.onload = function () {
+    initGoogleOAuth();
+
+    getAccessToken()
+        .then((token) => {
+            return getUserEmail(token);
+        })
+        .then((email) => {
+            document.getElementById("attendee-1").value = email;
+        })
+        .catch((error) => {
+            console.error(error);
+        });
+};
 
 function initGoogleOAuth() {
     getAccessToken()
@@ -326,7 +352,7 @@ document
     .addEventListener("click", (e) => {
         e.preventDefault();
 
-        let attendees = document.querySelector("#attendees").value.split(",");
+        let attendees = Array.from(document.querySelectorAll('.attendee'), input => input.value);
         let startDate = new Date(document.querySelector("#start-date").value);
         let duration = document.querySelector("#duration").value;
 
@@ -400,4 +426,26 @@ document.querySelector("#meeting-form").addEventListener("submit", (e) => {
         console.log("Please select a slot before submitting the form.");
         document.querySelector("#submit-btn").disabled = false;
     }
+});
+
+document.getElementById("add-attendee").addEventListener("click", function () {
+    const attendeeInput = document.createElement("input");
+    attendeeInput.className =
+        "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline attendee";
+    attendeeInput.type = "text";
+    attendeeInput.name = "attendees[]";
+    attendeeInput.placeholder = "Enter an email address";
+    attendeeInput.required = true;
+
+    const removeButton = document.createElement("button");
+    removeButton.innerHTML = "Remove";
+    removeButton.type = "button";
+    removeButton.addEventListener("click", function () {
+        this.previousSibling.remove();
+        this.remove();
+    });
+
+    const extraAttendees = document.getElementById("extra-attendees");
+    extraAttendees.appendChild(attendeeInput);
+    extraAttendees.appendChild(removeButton);
 });

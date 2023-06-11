@@ -56,7 +56,7 @@
                     ></textarea>
                 </div>
 
-                <div class="mb-4">
+                <div class="mb-4" id="attendees-section">
                     <label
                         class="block text-gray-700 text-sm font-bold mb-2"
                         for="attendees"
@@ -64,13 +64,20 @@
                         Attendees
                     </label>
                     <input
-                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        id="attendees"
-                        name="attendees"
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline attendee"
+                        id="attendee-1"
+                        name="attendees[]"
                         type="text"
-                        placeholder="Enter email addresses separated by comma"
+                        value="user@default.com"
+                        readonly
                         required
                     />
+                    <div id="extra-attendees">
+                        <!-- New attendee fields will be inserted here -->
+                    </div>
+                    <button id="add-attendee" type="button">
+                        Add attendee
+                    </button>
                 </div>
 
                 <div class="mb-4">
