@@ -6,6 +6,8 @@ let accessToken;
 let userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 let attendeesArray = [];
 let busy = [];
+let freeSlots = [];
+let dropdownMenu = document.querySelector(".hidden");
 let selectedWorkingHours = "Anytime";
 
 const workingHoursOptions = {
@@ -28,11 +30,14 @@ const scopes = [
 ];
 
 async function getUserEmail(token) {
-    const response = await fetch("https://www.googleapis.com/oauth2/v1/userinfo?alt=json", {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
+    const response = await fetch(
+        "https://www.googleapis.com/oauth2/v1/userinfo?alt=json",
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    );
     const data = await response.json();
     return data.email;
 }
@@ -164,8 +169,31 @@ function fetchEvents() {
         });
 }
 
+function suggestBestTime(freeSlots) {
+    const bestTimeContainer = document.querySelector("#best-time");
+
+    //* Clear previous suggestion
+    bestTimeContainer.innerHTML = "";
+
+    if (freeSlots.length > 0) {
+        const heading = document.createElement("h2");
+        heading.textContent = "Suggested Time Slot";
+        heading.classList.add("text-lg", "font-bold", "mb-2");
+        bestTimeContainer.appendChild(heading);
+
+        const timeElement = document.createElement("p");
+        timeElement.textContent = `Best Available Time: ${new Date(
+            freeSlots[0]
+        ).toLocaleString()}`;
+        timeElement.classList.add("mb-4", "text-gray-600");
+        bestTimeContainer.appendChild(timeElement);
+    } else {
+        bestTimeContainer.textContent = "No available slots found.";
+    }
+}
+
 function displayAvailableSlots(freeSlots) {
-    const slotsContainer = document.getElementById("slots");
+    const slotsContainer = document.querySelector("#slots");
 
     //* Clear previous slots
     slotsContainer.innerHTML =
@@ -191,6 +219,7 @@ function displayAvailableSlots(freeSlots) {
         radioWrapper.appendChild(label);
         slotsContainer.appendChild(radioWrapper);
     });
+    suggestBestTime(freeSlots);
 }
 
 function checkAvailability(
@@ -225,7 +254,6 @@ function checkAvailability(
                 console.log("Freebusy response:", data);
 
                 busy = data.calendars[attendeesArray[0].id].busy;
-                let freeSlots = [];
 
                 let currentSlot = new Date(startDate);
                 let endWorkingHours = new Date(endDate);
@@ -295,6 +323,8 @@ function checkAvailability(
                 console.log("Working hours:", workingHours[workingHoursOption]);
                 console.log("Current slot:", currentSlot);
                 console.log("End working hours:", endWorkingHours);
+                console.log("Busy slots:", busy);
+                console.log("Free slots:", freeSlots);
 
                 displayAvailableSlots(freeSlots);
             })
@@ -331,8 +361,6 @@ async function createEvent(event) {
     return data;
 }
 
-let dropdownMenu = document.querySelector(".hidden");
-
 document.querySelectorAll("[role='menuitem']").forEach((item) => {
     item.addEventListener("click", (e) => {
         e.preventDefault();
@@ -351,7 +379,7 @@ document.querySelector("#dropdown-btn").addEventListener("click", function (e) {
 
 document
     .querySelector("#check-availability-btn")
-    .addEventListener("click", (e) => {
+    .addEventListener("click", async (e) => {
         e.preventDefault();
 
         let attendees = Array.from(
@@ -370,13 +398,17 @@ document
         let endDate = new Date(startDate);
         endDate.setHours(23, 59, 59, 999);
 
-        checkAvailability(
+        freeSlots = [];
+
+        await checkAvailability(
             startDate,
             endDate,
             attendeesArray,
             duration,
             selectedWorkingHours
         );
+
+        suggestBestTime(freeSlots);
     });
 
 document.querySelector("#meeting-form").addEventListener("submit", (e) => {
@@ -436,7 +468,7 @@ document.querySelector("#meeting-form").addEventListener("submit", (e) => {
     }
 });
 
-document.getElementById("add-attendee").addEventListener("click", function () {
+document.querySelector("#add-attendee").addEventListener("click", function () {
     const attendeeInput = document.createElement("input");
     attendeeInput.className =
         "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline attendee";

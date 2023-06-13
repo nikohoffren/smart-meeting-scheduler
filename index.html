@@ -64,7 +64,7 @@
                         Attendees
                     </label>
                     <input
-                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline attendee"
+                        class="bg-gray-100 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline attendee"
                         id="attendee-1"
                         name="attendees[]"
                         type="text"
@@ -75,7 +75,7 @@
                     <div id="extra-attendees">
                         <!-- New attendee fields will be inserted here -->
                     </div>
-                    <button id="add-attendee" type="button">
+                    <button id="add-attendee" type="button" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                         Add attendee
                     </button>
                 </div>
@@ -194,8 +194,9 @@
                     >
                         Schedule Meeting
                     </button>
-                </div>
 
+                </div>
+                <div id="best-time" class="my-4"></div>
                 <div id="slots" class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2"
                         >Available Slots</label
