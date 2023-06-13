@@ -13,6 +13,13 @@ The Smart Meeting Scheduler Chrome Extension is a powerful tool designed to simp
 
 To install the Smart Meeting Scheduler Chrome Extension, follow these steps:
 
+1. Visit the [Chrome Web Store](https://chrome.google.com/webstore) and search for "Smart Meeting Scheduler".
+2. Click on the "Add to Chrome" button next to the extension.
+3. Confirm the installation by clicking "Add extension" in the pop-up window.
+4. Once installed, you will see the Smart Meeting Scheduler extension icon in the toolbar of your Chrome browser.
+
+For a manual installation or for development purposes, you can load the extension from a local directory:
+
 1. Clone the repository or download the source code.
 2. Open the Chrome browser and navigate to `chrome://extensions`.
 3. Enable Developer Mode by toggling the switch at the top right corner of the page.
@@ -26,6 +33,18 @@ To install the Smart Meeting Scheduler Chrome Extension, follow these steps:
 3. Fill in the meeting details, including the title, description, attendees, preferred start and end dates, and meeting duration.
 4. Click the "Schedule Meeting" button.
 5. The extension will automatically find the best available time slot for the meeting and add it to your Google Calendar.
+
+## Sharing Google Calendar
+
+For the Smart Meeting Scheduler to work best, attendees should share their calendars with each other. Here's how to share a Google Calendar:
+
+1. In Google Calendar, click on the three dots next to the calendar you want to share and choose "Settings and sharing".
+2. Under the "Share with specific people" section, click "Add people".
+3. Enter the email address of the person with whom you want to share the calendar.
+4. In the "Permissions" drop-down list, select the appropriate level of access. To only show when you're busy, choose "See only free/busy (hide details)".
+5. Click "Send". The person will receive an email with a link to add your calendar to their list.
+
+Note: If you don't see the person's calendar after they've shared it, try refreshing your Google Calendar page or wait a few minutes.
 
 ## Contributing
 
