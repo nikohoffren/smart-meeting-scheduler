@@ -12,9 +12,45 @@
 
     <body class="bg-white-200">
         <div class="flex justify-center pt-20 px-8">
+            <button
+                id="settings-button"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            >
+                Settings
+            </button>
+
+            <div
+                id="settings-modal"
+                class="fixed z-10 inset-0 overflow-y-auto hidden"
+            >
+                <div
+                    class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
+                >
+                    <!-- settings content goes here -->
+                    <div
+                        class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+                    >
+                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                            <label for="preference">Preference:</label>
+                            <input id="preference" type="text" value="" />
+                        </div>
+                        <div
+                            class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse"
+                        >
+                            <button
+                                id="save-settings-button"
+                                type="button"
+                                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <form
                 id="meeting-form"
-                class="w-full max-w-xl bg-white rounded-lg shadow-md px-12 pt-6 pb-8 mb-4"
+                class="w-fullttox-w-xl bg-white rounded-lg shadow-md px-12 pt-6 pb-8 mb-4"
             >
                 <div class="flex justify-center">
                     <img
@@ -75,7 +111,11 @@
                     <div id="extra-attendees">
                         <!-- New attendee fields will be inserted here -->
                     </div>
-                    <button id="add-attendee" type="button" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    <button
+                        id="add-attendee"
+                        type="button"
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                    >
                         Add attendee
                     </button>
                 </div>
@@ -194,7 +234,6 @@
                     >
                         Schedule Meeting
                     </button>
-
                 </div>
                 <div id="best-time" class="my-4"></div>
                 <div id="slots" class="mb-4">

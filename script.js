@@ -7,8 +7,13 @@ let userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 let attendeesArray = [];
 let busy = [];
 let freeSlots = [];
-let dropdownMenu = document.querySelector(".hidden");
 let selectedWorkingHours = "Anytime";
+let settingsButton = document.getElementById('settings-button');
+let saveSettingsButton = document.getElementById('save-settings-button');
+let settingsModal = document.getElementById('settings-modal');
+let dropdownButton = document.getElementById('dropdown-btn');
+let dropdownMenu = document.querySelector('.origin-top-right');
+let preferenceInput = document.getElementById('preference');
 
 const workingHoursOptions = {
     Anytime: "Anytime",
@@ -372,10 +377,6 @@ document.querySelectorAll("[role='menuitem']").forEach((item) => {
     });
 });
 
-document.querySelector("#dropdown-btn").addEventListener("click", function (e) {
-    e.preventDefault();
-    dropdownMenu.classList.toggle("hidden");
-});
 
 document
     .querySelector("#check-availability-btn")
@@ -488,4 +489,19 @@ document.querySelector("#add-attendee").addEventListener("click", function () {
     const extraAttendees = document.getElementById("extra-attendees");
     extraAttendees.appendChild(attendeeInput);
     extraAttendees.appendChild(removeButton);
+});
+settingsButton.addEventListener('click', function() {
+    let preference = localStorage.getItem('preference');
+    preferenceInput.value = preference;
+    settingsModal.classList.toggle('hidden');
+});
+
+saveSettingsButton.addEventListener('click', function() {
+    localStorage.setItem('preference', preferenceInput.value);
+    settingsModal.classList.add('hidden');
+});
+
+// Added event listener for dropdownButton
+dropdownButton.addEventListener('click', function() {
+    dropdownMenu.classList.toggle('hidden');
 });
