@@ -11,14 +11,21 @@
     </head>
 
     <body class="bg-white-200">
-        <div class="flex justify-center pt-20 px-8">
+        <div class="flex justify-between px-8 py-4">
+            <div></div>
             <button
                 id="settings-button"
-                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                class="bg-gray-300 hover:bg-gray-400 text-white font-bold py-2 px-4 rounded relative flex justify-center items-center"
             >
-                Settings
+                <img
+                    src="img/settings-icon.png"
+                    alt="settings"
+                    class="w-4 h-4"
+                />
             </button>
+        </div>
 
+        <div class="flex justify-between px-8 py-4">
             <div
                 id="settings-modal"
                 class="fixed z-10 inset-0 overflow-y-auto hidden"
@@ -114,7 +121,7 @@
                     <button
                         id="add-attendee"
                         type="button"
-                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mt-1 rounded"
                     >
                         Add attendee
                     </button>
