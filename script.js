@@ -8,12 +8,12 @@ let attendeesArray = [];
 let busy = [];
 let freeSlots = [];
 let selectedWorkingHours = "Anytime";
-let settingsButton = document.getElementById('settings-button');
-let saveSettingsButton = document.getElementById('save-settings-button');
-let settingsModal = document.getElementById('settings-modal');
-let dropdownButton = document.getElementById('dropdown-btn');
-let dropdownMenu = document.querySelector('.origin-top-right');
-let preferenceInput = document.getElementById('preference');
+let settingsButton = document.getElementById("settings-button");
+let saveSettingsButton = document.getElementById("save-settings-button");
+let settingsModal = document.getElementById("settings-modal");
+let dropdownButton = document.getElementById("dropdown-btn");
+let dropdownMenu = document.querySelector(".origin-top-right");
+let preferenceInput = document.getElementById("preference");
 
 const workingHoursOptions = {
     Anytime: "Anytime",
@@ -98,7 +98,6 @@ function displayEvents(events) {
     const upcomingEvents = document.getElementById("upcoming-events");
 
     upcomingEvents.innerHTML = "";
-
     upcomingEvents.classList.add(
         "flex",
         "flex-col",
@@ -109,7 +108,12 @@ function displayEvents(events) {
     if (events.length > 0) {
         const heading = document.createElement("h1");
         heading.textContent = "Upcoming Events";
-        heading.classList.add("text-lg", "font-bold", "mb-4");
+        heading.classList.add(
+            "text-2xl",
+            "font-semibold",
+            "mb-8",
+            "text-gray-700"
+        );
         upcomingEvents.appendChild(heading);
     }
 
@@ -118,31 +122,79 @@ function displayEvents(events) {
         eventElement.classList.add(
             "event",
             "bg-white",
-            "shadow",
+            "shadow-md",
             "my-4",
-            "p-4",
-            "rounded-md"
+            "p-6",
+            "rounded-lg",
+            "w-full",
+            "md:w-3/4",
+            "lg:w-1/2",
+            "xl:w-1/3"
         );
 
         const titleElement = document.createElement("h2");
         titleElement.textContent = event.summary;
-        titleElement.classList.add("text-lg", "font-bold", "mb-2");
+        titleElement.classList.add(
+            "text-xl",
+            "font-bold",
+            "mb-4",
+            "text-gray-800"
+        );
         eventElement.appendChild(titleElement);
 
-        const timeElement = document.createElement("p");
-        timeElement.textContent = `Starts: ${new Date(
+        // Creating a container for the time details
+        const timeContainer = document.createElement("div");
+        timeContainer.classList.add("flex", "flex-col", "space-y-2", "mb-4");
+
+        // Creating and adding the start time element
+        const startTimeElement = document.createElement("p");
+        startTimeElement.textContent = `Starts: ${new Date(
             event.start.dateTime
-        ).toLocaleString()} Ends: ${new Date(
+        ).toLocaleString()}`;
+        startTimeElement.classList.add("text-gray-600", "text-base");
+        timeContainer.appendChild(startTimeElement);
+
+        // Creating and adding the end time element
+        const endTimeElement = document.createElement("p");
+        endTimeElement.textContent = `Ends: ${new Date(
             event.end.dateTime
         ).toLocaleString()}`;
-        timeElement.classList.add("mb-4", "text-gray-600");
-        eventElement.appendChild(timeElement);
+        endTimeElement.classList.add("text-gray-600", "text-base");
+        timeContainer.appendChild(endTimeElement);
+
+        eventElement.appendChild(timeContainer);
+
+        const attendeesContainer = document.createElement("div");
+        attendeesContainer.classList.add(
+            "flex",
+            "flex-col",
+            "space-y-2",
+            "mb-4"
+        );
+
+        const attendeesLabel = document.createElement("h3");
+        attendeesLabel.textContent = "Attendees:";
+        attendeesLabel.classList.add("text-gray-600", "font-bold", "text-base");
+        attendeesContainer.appendChild(attendeesLabel);
+
+        event.attendees.forEach((attendee) => {
+            const attendeeElement = document.createElement("p");
+            attendeeElement.textContent = attendee.email;
+            attendeeElement.classList.add("text-gray-600", "text-base");
+            attendeesContainer.appendChild(attendeeElement);
+        });
+
+        eventElement.appendChild(attendeesContainer);
 
         const linkElement = document.createElement("a");
         linkElement.href = event.htmlLink;
         linkElement.textContent = "Open in Google Calendar";
         linkElement.target = "_blank";
-        linkElement.classList.add("text-blue-500", "underline");
+        linkElement.classList.add(
+            "text-blue-500",
+            "underline",
+            "hover:text-blue-700"
+        );
         eventElement.appendChild(linkElement);
 
         upcomingEvents.appendChild(eventElement);
@@ -377,7 +429,6 @@ document.querySelectorAll("[role='menuitem']").forEach((item) => {
     });
 });
 
-
 document
     .querySelector("#check-availability-btn")
     .addEventListener("click", async (e) => {
@@ -481,6 +532,23 @@ document.querySelector("#add-attendee").addEventListener("click", function () {
     const removeButton = document.createElement("button");
     removeButton.innerHTML = "Remove";
     removeButton.type = "button";
+
+    removeButton.classList.add(
+        "px-2",
+        "py-1",
+        "bg-red-500",
+        "text-white",
+        "rounded-md",
+        "shadow",
+        "hover:bg-red-600",
+        "focus:outline-none",
+        "focus:ring-2",
+        "focus:ring-offset-2",
+        "focus:ring-red-500",
+        "ml-2",
+        "mt-1"
+    );
+
     removeButton.addEventListener("click", function () {
         this.previousSibling.remove();
         this.remove();
@@ -490,18 +558,7 @@ document.querySelector("#add-attendee").addEventListener("click", function () {
     extraAttendees.appendChild(attendeeInput);
     extraAttendees.appendChild(removeButton);
 });
-settingsButton.addEventListener('click', function() {
-    let preference = localStorage.getItem('preference');
-    preferenceInput.value = preference;
-    settingsModal.classList.toggle('hidden');
-});
 
-saveSettingsButton.addEventListener('click', function() {
-    localStorage.setItem('preference', preferenceInput.value);
-    settingsModal.classList.add('hidden');
-});
-
-// Added event listener for dropdownButton
-dropdownButton.addEventListener('click', function() {
-    dropdownMenu.classList.toggle('hidden');
+dropdownButton.addEventListener("click", function () {
+    dropdownMenu.classList.toggle("hidden");
 });
