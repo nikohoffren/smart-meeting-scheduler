@@ -8,12 +8,12 @@ let attendeesArray = [];
 let busy = [];
 let freeSlots = [];
 let selectedWorkingHours = "Anytime";
-let settingsButton = document.getElementById("settings-button");
-let saveSettingsButton = document.getElementById("save-settings-button");
-let settingsModal = document.getElementById("settings-modal");
-let dropdownButton = document.getElementById("dropdown-btn");
+let settingsButton = document.querySelector("#settings-button");
+let saveSettingsButton = document.querySelector("#save-settings-button");
+let settingsModal = document.querySelector("#settings-modal");
+let dropdownButton = document.querySelector("#dropdown-btn");
 let dropdownMenu = document.querySelector(".origin-top-right");
-let preferenceInput = document.getElementById("preference");
+let preferenceInput = document.querySelector("#preference");
 
 const workingHoursOptions = {
     Anytime: "Anytime",
