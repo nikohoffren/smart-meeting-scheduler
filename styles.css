@@ -1,5 +1,6 @@
 /* run `npx tailwindcss build -i styles.css -o output.css` to generate css */
 /* after that run `npx webpack` to build the project */
+/* run `zip -r smart_meeting_scheduler.zip .` to create zip */
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
