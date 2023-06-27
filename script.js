@@ -142,11 +142,9 @@ function displayEvents(events) {
         );
         eventElement.appendChild(titleElement);
 
-        // Creating a container for the time details
         const timeContainer = document.createElement("div");
         timeContainer.classList.add("flex", "flex-col", "space-y-2", "mb-4");
 
-        // Creating and adding the start time element
         const startTimeElement = document.createElement("p");
         startTimeElement.textContent = `Starts: ${new Date(
             event.start.dateTime
@@ -154,7 +152,6 @@ function displayEvents(events) {
         startTimeElement.classList.add("text-gray-600", "text-base");
         timeContainer.appendChild(startTimeElement);
 
-        // Creating and adding the end time element
         const endTimeElement = document.createElement("p");
         endTimeElement.textContent = `Ends: ${new Date(
             event.end.dateTime
