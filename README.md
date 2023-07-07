@@ -1,7 +1,7 @@
 # Smart Meeting Scheduler Chrome Extension
 
 The Smart Meeting Scheduler Chrome Extension is a powerful tool designed to simplify and streamline the process of scheduling meetings using Google Calendar. It automatically finds the best meeting times that work for all attendees, eliminating the need for back-and-forth emails and reducing scheduling conflicts.
-Official website: [Smart Meeting Scheduler](https://smartmeetingscheduler.site)
+Official website: [smartmeetingscheduler.site](https://smartmeetingscheduler.site)
 
 ## Features
 
